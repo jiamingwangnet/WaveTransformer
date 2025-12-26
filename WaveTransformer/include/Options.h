@@ -115,7 +115,7 @@ namespace opt
 		std::cout << "WaveTransformer Options:\n";
 		std::cout << "Format: [input] <options> [value]...\n";
 		std::cout << HELP_SHORT << ", " << HELP_LONG << ": " << HELP_DESCRIPTION << "\n";
-		std::cout << CHANNELS_SHORT << ", " << CHANNELS_LONG << ": " << channels::DESCRIPTION << " (Default: " << channels::DEFAULT << ")\n";
+		std::cout << CHANNELS_SHORT << ", " << CHANNELS_LONG << ": " << channels::DESCRIPTION << " (Default: " << (channels::DEFAULT == 1 ? "mono" : "stereo") << ")\n";
 		std::cout << SAMPLE_RATE_SHORT << ", " << SAMPLE_RATE_LONG << ": " << sample_rate::DESCRIPTION << " (Default: " << sample_rate::DEFAULT << ")\n";
 		std::cout << BIT_DEPTH_SHORT << ", " << BIT_DEPTH_LONG << ": " << bit_depth::DESCRIPTION << " (Default: " << bit_depth::DEFAULT << ")\n";
 		std::cout << FORMAT_SHORT << ", " << FORMAT_LONG << ": " << format::DESCRIPTION << " (Default: " << format::DEFAULT << ")\n";
