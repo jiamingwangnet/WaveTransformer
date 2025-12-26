@@ -6,10 +6,17 @@
 #include "include/InputParser.h"
 #include "include/WaveFile.h"
 #include "include/Options.h"
+#include "include/Algo.h"
 
 int main(int argc, char** argv)
 {
 	InputParser parser{ argc, argv };
+
+	if (parser.cmdOptionExists(opt::HELP_SHORT) || parser.cmdOptionExists(opt::HELP_LONG))
+	{
+		opt::DisplayHelp();
+		return 0;
+	}
 
 	wf::WaveFile::SampleRate sampleRate = static_cast<wf::WaveFile::SampleRate>(opt::sample_rate::DEFAULT);
 	wf::WaveFile::BitsPerSample bitDepth = static_cast<wf::WaveFile::BitsPerSample>(opt::bit_depth::DEFAULT);
@@ -17,10 +24,27 @@ int main(int argc, char** argv)
 	wf::WaveFile::AudioFormat format = static_cast<wf::WaveFile::AudioFormat>(opt::format::DEFAULT);
 	std::string outputFile = opt::output::DEFAULT;
 
-	if (parser.cmdOptionExists(opt::HELP_SHORT) || parser.cmdOptionExists(opt::HELP_LONG))
+	std::string s_operation;
+	opt::operation::OPERATIONS operation;
+	// take the first param to be the operation
+	if (argc > 1)
 	{
-		opt::DisplayHelp();
-		return 0;
+		s_operation = argv[1];
+	}
+	else
+	{
+		std::cerr << "Error: No operation specified." << std::endl;
+		return 1;
+	}
+
+	if (s_operation == opt::operation::REINTERPRET)
+		operation = opt::operation::OP_REINTERPRET;
+	else if (s_operation == opt::operation::INTERLACE)
+		operation = opt::operation::OP_INTERLACE;
+	else
+	{
+		std::cerr << "Error: Invalid operation specified: " << s_operation << std::endl;
+		return 1;
 	}
 
 	if (parser.cmdOptionExists(opt::SAMPLE_RATE_SHORT) || parser.cmdOptionExists(opt::SAMPLE_RATE_LONG))
@@ -80,21 +104,10 @@ int main(int argc, char** argv)
 
 	if (parser.cmdOptionExists(opt::TAG_SHORT) || parser.cmdOptionExists(opt::TAG_LONG))
 	{
-		outputFile = opt::TagFile(outputFile, channels, sampleRate, bitDepth, format);
+		outputFile = opt::TagFile(outputFile, s_operation, channels, sampleRate, bitDepth, format);
 	}
 
-	std::string inputFile;
-	// Assume the first non-option argument is the input file
-	for (int i = 1; i < argc; ++i)
-	{
-		std::string arg = argv[i];
-		if (arg[0] != '-')
-		{
-			inputFile = arg;
-			break;
-		}
-	}
-
+	std::cout << "Operation: " << s_operation << std::endl;
 	std::cout << "Configured Wave File Parameters:" << std::endl;
 	std::cout << "Sample Rate: " << static_cast<int>(sampleRate) << " Hz" << std::endl;
 	std::cout << "Bit Depth: " << static_cast<int>(bitDepth) << " bits" << std::endl;
@@ -104,14 +117,55 @@ int main(int argc, char** argv)
 	wf::WaveFile waveFile{outputFile, sampleRate, bitDepth, channels, format };
 
 	std::vector<uint8_t> audioData;
-	std::ifstream inputStream{ inputFile, std::ios::binary };
-	if (!inputStream)
+
+	std::string inputFile;
+
+	try
 	{
-		std::cerr << "Error: Unable to open input file: " << inputFile << std::endl;
+		switch (operation)
+		{
+		case opt::operation::OP_REINTERPRET:
+			// Assume the second argument is the input file
+			if (argc > 2)
+			{
+				inputFile = argv[2];
+			}
+			else
+			{
+				std::cerr << "Error: No input file specified." << std::endl;
+				return 1;
+			}
+			algo::Reinterpret(inputFile, audioData);
+			break;
+		case opt::operation::OP_INTERLACE:
+			// take the files from after the operation and stop when an option is found
+		{
+			std::vector<std::string> inputFiles;
+			for (int i = 2; i < argc; ++i)
+			{
+				std::string arg = argv[i];
+				if (arg.rfind("-", 0) == 0) // starts with '-'
+				{
+					break;
+				}
+				inputFiles.push_back(arg);
+			}
+			algo::Interlace(inputFiles, audioData);
+		}
+		break;
+		default:
+			std::cerr << "Error: Unsupported operation." << std::endl;
+			return 1;
+		}
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cerr << "Error during processing: " << e.what() << std::endl;
 		return 1;
 	}
-	// read input file data to audioData
-	audioData.assign((std::istreambuf_iterator<char>(inputStream)), std::istreambuf_iterator<char>());
+
+	std::cout << "Audio data size: " << audioData.size() << " bytes" << std::endl;
+	
 	waveFile.SetData(std::move(audioData));
 	waveFile.WriteOut();
 

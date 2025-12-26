@@ -88,7 +88,19 @@ namespace opt
 		constexpr const char* DESCRIPTION = "Append settings to output file name";
 	} // namespace tag
 
-	std::string TagFile(const std::string& filename, wf::WaveFile::Channels channels, wf::WaveFile::SampleRate sampleRate, wf::WaveFile::BitsPerSample bitDepth, wf::WaveFile::AudioFormat format)
+	namespace operation
+	{
+		constexpr const char* REINTERPRET = "reint";
+		constexpr const char* INTERLACE	  = "inter";
+
+		enum OPERATIONS
+		{
+			OP_REINTERPRET,
+			OP_INTERLACE
+		};
+	}
+
+	std::string TagFile(const std::string& filename, const std::string& operation, wf::WaveFile::Channels channels, wf::WaveFile::SampleRate sampleRate, wf::WaveFile::BitsPerSample bitDepth, wf::WaveFile::AudioFormat format)
 	{
 		std::string taggedName = filename;
 
@@ -100,6 +112,7 @@ namespace opt
 		}
 
 		std::string tag = "_";
+		tag += operation + "_";
 		tag += (channels == wf::WaveFile::Channels::Mono ? "mono_" : "stereo_");
 		tag += std::to_string(static_cast<int>(sampleRate)) + "Hz_";
 		tag += std::to_string(static_cast<int>(bitDepth)) + "bit_";
@@ -111,8 +124,12 @@ namespace opt
 
 	void DisplayHelp()
 	{
-		std::cout << "WaveTransformer Options:\n";
-		std::cout << "Format: [input] <options> [value]...\n";
+		std::cout << "WaveTransformer Help:\n";
+		std::cout << "Format: <operation> [inputs...] <options> [value]...\n";
+		std::cout << "Operations:\n";
+		std::cout << "  " << operation::REINTERPRET << ": Reinterpret the data of the input file as an wave file with specified parameters.\n";
+		std::cout << "  " << operation::INTERLACE << ": Interlace multiple files into a single wave file.\n";
+		std::cout << "Options:\n";
 		std::cout << HELP_SHORT << ", " << HELP_LONG << ": " << HELP_DESCRIPTION << "\n";
 		std::cout << CHANNELS_SHORT << ", " << CHANNELS_LONG << ": " << channels::DESCRIPTION << " (Default: " << (channels::DEFAULT == 1 ? "mono" : "stereo") << ")\n";
 		std::cout << SAMPLE_RATE_SHORT << ", " << SAMPLE_RATE_LONG << ": " << sample_rate::DESCRIPTION << " (Default: " << sample_rate::DEFAULT << ")\n";

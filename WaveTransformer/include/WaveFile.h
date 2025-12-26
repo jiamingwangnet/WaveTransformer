@@ -197,7 +197,7 @@ namespace wf
 		{
 			throw std::runtime_error("Failed to open file for writing: " + path);
 		}
-
+		//std::cout << data.size() << " bytes written to " << path << std::endl;
 		file.write(reinterpret_cast<const char*>(&riff), sizeof(riffHeader));
 		file.write(reinterpret_cast<const char*>(&fmt), sizeof(fmtChunk));
 		file.write(reinterpret_cast<const char*>(&dataHeader), sizeof(dataChunkHeader));
