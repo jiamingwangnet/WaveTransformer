@@ -86,7 +86,6 @@ namespace opt
 	namespace tag
 	{
 		constexpr const char* DESCRIPTION = "Append settings to output file name";
-		constexpr bool DEFAULT = false;
 	} // namespace tag
 
 	std::string TagFile(const std::string& filename, wf::WaveFile::Channels channels, wf::WaveFile::SampleRate sampleRate, wf::WaveFile::BitsPerSample bitDepth, wf::WaveFile::AudioFormat format)
@@ -118,8 +117,8 @@ namespace opt
 		std::cout << CHANNELS_SHORT << ", " << CHANNELS_LONG << ": " << channels::DESCRIPTION << " (Default: " << (channels::DEFAULT == 1 ? "mono" : "stereo") << ")\n";
 		std::cout << SAMPLE_RATE_SHORT << ", " << SAMPLE_RATE_LONG << ": " << sample_rate::DESCRIPTION << " (Default: " << sample_rate::DEFAULT << ")\n";
 		std::cout << BIT_DEPTH_SHORT << ", " << BIT_DEPTH_LONG << ": " << bit_depth::DESCRIPTION << " (Default: " << bit_depth::DEFAULT << ")\n";
-		std::cout << FORMAT_SHORT << ", " << FORMAT_LONG << ": " << format::DESCRIPTION << " (Default: " << format::DEFAULT << ")\n";
+		std::cout << FORMAT_SHORT << ", " << FORMAT_LONG << ": " << format::DESCRIPTION << " (Default: " << (format::DEFAULT == 1 ? "PCM" : (format::DEFAULT == 3 ? "FLOAT" : "INVALID")) << ")\n";
 		std::cout << OUT_SHORT << ", " << OUT_LONG << ": " << output::DESCRIPTION << " (Default: " << output::DEFAULT << ")\n";
-		std::cout << TAG_SHORT << ", " << TAG_LONG << ": " << tag::DESCRIPTION << " (Default: " << (tag::DEFAULT ? "true" : "false") << ")\n";
+		std::cout << TAG_SHORT << ", " << TAG_LONG << ": " << tag::DESCRIPTION << std::endl;
 	}
 }
