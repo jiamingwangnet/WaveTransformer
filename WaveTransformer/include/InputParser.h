@@ -28,6 +28,22 @@ public:
         return std::find(this->tokens.begin(), this->tokens.end(), option)
             != this->tokens.end();
     }
+    std::vector<std::string> getMultipleOptions(const std::string& option) const 
+    {
+		// find the option and return all subsequent arguments until the next option or end
+		std::vector<std::string> results;
+		auto itr = std::find(this->tokens.begin(), this->tokens.end(), option);
+        if (itr != this->tokens.end())
+        {
+            ++itr; // move to the next token
+            while (itr != this->tokens.end() && itr->rfind("-", 0) != 0)
+            {
+                results.push_back(*itr);
+                ++itr;
+            }
+        }
+		return results;
+    }
 private:
     std::vector <std::string> tokens;
 };
